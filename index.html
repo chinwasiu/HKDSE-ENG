@@ -40,7 +40,6 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    /* 頂部導覽與倒計時條 */
     .header-bar {
       background: var(--banner-bg);
       color: var(--banner-text);
@@ -123,7 +122,6 @@
       display: block;
     }
 
-    /* Form Styles */
     .form-group {
       margin-bottom: 15px;
     }
@@ -146,7 +144,6 @@
       font-size: 14px;
     }
 
-    /* 改造後的主題 Checkbox 容器 */
     .checkbox-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -197,7 +194,6 @@
       font-weight: bold;
     }
 
-    /* Filter Bar */
     .filter-bar {
       display: flex;
       gap: 10px;
@@ -208,7 +204,6 @@
     .filter-bar input { flex: 2; min-width: 180px; }
     .filter-bar select { flex: 1; min-width: 140px; }
 
-    /* Flashcard Styles */
     .review-status {
       background: rgba(43, 87, 151, 0.1);
       border-left: 4px solid var(--primary);
@@ -253,6 +248,7 @@
     }
 
     .badge-cat { background: #e8f5e9; color: #2e7d32; }
+    .badge-pos { background: #fff3e0; color: #e65100; }
     .badge-stage { background: #f3e5f5; color: #7b1fa2; }
     .badge-topic { background: #e3f2fd; color: #0d47a1; }
 
@@ -292,7 +288,6 @@
     .btn-forgot { background: #dc3545; color: white; display: none; }
     .btn-remembered { background: #28a745; color: white; display: none; }
 
-    /* List Item Styles */
     .word-item {
       border-bottom: 1px solid var(--item-border);
       padding: 12px 0;
@@ -308,11 +303,7 @@
     .delete-btn { color: #dc3545; cursor: pointer; border: none; background: none; font-weight: bold; }
     .meta-tag { font-size: 12px; color: var(--meta-text); }
 
-    /* Multiple Choice Quiz Mode */
-    .quiz-box {
-      text-align: center;
-      padding: 10px;
-    }
+    .quiz-box { text-align: center; padding: 10px; }
     .quiz-score-banner {
       background: rgba(40, 167, 69, 0.1);
       border: 1px solid #28a745;
@@ -365,7 +356,6 @@
     .quiz-correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .quiz-wrong { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-    /* Stats Dashboard */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -393,7 +383,6 @@
     }
     table.stats-table th { background: rgba(43, 87, 151, 0.1); }
 
-    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -417,7 +406,6 @@
 </head>
 <body>
 
-<!-- 頂部導覽列 -->
 <div class="header-bar">
   <div>⏳ 距離完結日期 (2029/04/04)：<span id="global-countdown" class="countdown-timer">載入中...</span></div>
   <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 模式切換</button>
@@ -468,7 +456,7 @@
     </div>
   </div>
 
-  <!-- 多選題測驗面板 (英文選中文) -->
+  <!-- 多選題測驗面板 -->
   <div id="quiz-panel" class="panel">
     <div class="review-status">
       <span id="quiz-status-bar">加載中...</span>
@@ -498,7 +486,6 @@
       <div class="card-text" id="quiz-target-word">題目加載中...</div>
       <div class="help-text" id="quiz-example-hint" style="margin-bottom:20px; font-size:15px;"></div>
       
-      <!-- 4 個多選題按鈕容器 -->
       <div class="mc-options-grid" id="mc-options-container"></div>
 
       <div id="quiz-feedback" class="quiz-result" style="display:none;"></div>
@@ -515,12 +502,25 @@
           <option value="word">單詞 (Single Word)</option>
           <option value="phrase">其他 / 短語句型 (Phrases, Sentences, Connectives & Openings)</option>
         </select>
-        <div class="help-text">* 段落開頭、轉接詞、文章結構句型等請一律選擇「其他 / 短語句型」。</div>
       </div>
 
       <div class="form-group">
         <label for="item">英文內容 (Word / Phrase)</label>
         <input type="text" id="item" placeholder="例如: Exacerbate 或 On the flip side of the coin..." required>
+      </div>
+
+      <div class="form-group">
+        <label for="pos">詞性 (Part of Speech)</label>
+        <select id="pos">
+          <option value="n.">n. (名詞)</option>
+          <option value="v.">v. (動詞)</option>
+          <option value="adj.">adj. (形容詞)</option>
+          <option value="adv.">adv. (副詞)</option>
+          <option value="phr.">phr. (短語/片語)</option>
+          <option value="sentence">sentence (句型/連接句)</option>
+          <option value="prep.">prep. (介系詞)</option>
+          <option value="conj.">conj. (連接詞)</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -535,7 +535,6 @@
       <div class="form-group">
         <label>DSE 作文主題標籤 (可多選)</label>
         <div id="add-topics-container" class="checkbox-grid"></div>
-        <div class="help-text">* 可直接勾選適用的一或多個作文主題。</div>
       </div>
 
       <div class="form-group">
@@ -610,7 +609,7 @@
   </div>
 </div>
 
-<!-- 編輯彈出視窗 (Edit Modal) -->
+<!-- 編輯彈出視窗 -->
 <div id="edit-modal" class="modal">
   <div class="modal-content">
     <h3>✏️ 編輯項目</h3>
@@ -626,6 +625,19 @@
       <div class="form-group">
         <label for="edit-item">英文內容</label>
         <input type="text" id="edit-item" required>
+      </div>
+      <div class="form-group">
+        <label for="edit-pos">詞性 (Part of Speech)</label>
+        <select id="edit-pos">
+          <option value="n.">n. (名詞)</option>
+          <option value="v.">v. (動詞)</option>
+          <option value="adj.">adj. (形容詞)</option>
+          <option value="adv.">adv. (副詞)</option>
+          <option value="phr.">phr. (短語/片語)</option>
+          <option value="sentence">sentence (句型/連接句)</option>
+          <option value="prep.">prep. (介系詞)</option>
+          <option value="conj.">conj. (連接詞)</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="edit-formality">正式程度</label>
@@ -656,7 +668,6 @@
 </div>
 
 <script>
-  // 9 大 DSE 主題定義
   const DSE_TOPICS = [
     "1. Technology & Future Trends",
     "2. School Life, Education & Youth",
@@ -671,11 +682,11 @@
 
   const INTERVAL_DAYS = [0, 1, 3, 7, 16, 30];
 
-  // 預設資料
-  let vocabList = JSON.parse(localStorage.getItem('dse_vocab_v5')) || [
+  let vocabList = JSON.parse(localStorage.getItem('dse_vocab_v6')) || [
     {
       category: 'word',
       item: 'Exacerbate',
+      pos: 'v.',
       formality: 'Formal',
       topics: ["3. Social Issues, Wealth & Community", "4. Environmental Protection & Sustainability"],
       meaning: '使惡化、加劇',
@@ -686,6 +697,7 @@
     {
       category: 'phrase',
       item: 'It is imperatively urgent that...',
+      pos: 'sentence',
       formality: 'Formal',
       topics: ["3. Social Issues, Wealth & Community", "9. Others"],
       meaning: '迫切需要...（常用作段落引申句型）',
@@ -695,13 +707,11 @@
     }
   ];
 
-  // 測驗成績統計
   let quizStats = { correct: 0, total: 0 };
   let currentCard = null;
   let currentQuiz = null;
   let isQuizSubmitted = false;
 
-  // --- 倒計時邏輯 ---
   function startCountdown() {
     const targetDate = new Date('2029-04-04T00:00:00').getTime();
     function updateTimer() {
@@ -721,7 +731,6 @@
     setInterval(updateTimer, 1000);
   }
 
-  // --- 深色模式切換 ---
   function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
@@ -734,7 +743,6 @@
     }
   }
 
-  // --- 渲染主題勾選視窗 (Checkbox Grid) 與過濾下拉選單 ---
   function renderTopicCheckboxes(containerId, namePrefix, selectedList = []) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -756,11 +764,9 @@
   }
 
   function initTopicSelects() {
-    // 渲染新增面板與編輯面板的 Checkbox 列表
     renderTopicCheckboxes('add-topics-container', 'add');
     renderTopicCheckboxes('edit-topics-container', 'edit');
 
-    // 渲染篩選用下拉選單
     const optionsHtml = DSE_TOPICS.map(t => `<option value="${t}">${t}</option>`).join('');
     const filterOptions = `<option value="ALL">所有主題 (All Topics)</option>` + optionsHtml;
     
@@ -770,7 +776,6 @@
     document.getElementById('filter-phrase-topic').innerHTML = filterOptions;
   }
 
-  // --- Tab 切換 ---
   function switchTab(tabName) {
     const tabs = ['review', 'quiz', 'add', 'vocab', 'phrase', 'stats'];
     document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
@@ -787,7 +792,6 @@
     if (tabName === 'stats') renderStats();
   }
 
-  // --- 保存新資料 ---
   function saveItem(e) {
     e.preventDefault();
     const selectedTopics = getSelectedCheckboxes('add');
@@ -800,6 +804,7 @@
     const newItem = {
       category: document.getElementById('category').value,
       item: document.getElementById('item').value.trim(),
+      pos: document.getElementById('pos').value,
       formality: document.getElementById('formality').value,
       topics: selectedTopics,
       meaning: document.getElementById('meaning').value.trim(),
@@ -809,13 +814,12 @@
     };
 
     vocabList.push(newItem);
-    localStorage.setItem('dse_vocab_v5', JSON.stringify(vocabList));
+    localStorage.setItem('dse_vocab_v6', JSON.stringify(vocabList));
     document.getElementById('vocab-form').reset();
-    renderTopicCheckboxes('add-topics-container', 'add'); // 重置勾選
+    renderTopicCheckboxes('add-topics-container', 'add');
     alert('成功儲存！');
   }
 
-  // --- 覆習卡片邏輯 ---
   function loadNextReviewCard() {
     const mode = document.getElementById('review-mode')?.value || 'spaced';
     const filterTopic = document.getElementById('review-topic-filter')?.value || 'ALL';
@@ -850,6 +854,7 @@
     const topicBadges = (currentCard.topics || []).map(t => `<span class="badge badge-topic">${t.split('.')[0]}</span>`).join('');
     document.getElementById('card-badges').innerHTML = `
       <span class="badge badge-cat">${currentCard.category === 'word' ? '單詞' : '其他/短語句型'}</span>
+      <span class="badge badge-pos">${currentCard.pos || 'N/A'}</span>
       <span class="badge badge-stage">Stage ${currentCard.stage}</span>
       ${topicBadges}
     `;
@@ -878,12 +883,11 @@
       const nextDate = new Date();
       nextDate.setDate(nextDate.getDate() + INTERVAL_DAYS[item.stage]);
       item.nextReviewDate = nextDate.toISOString();
-      localStorage.setItem('dse_vocab_v5', JSON.stringify(vocabList));
+      localStorage.setItem('dse_vocab_v6', JSON.stringify(vocabList));
     }
     loadNextReviewCard();
   }
 
-  // --- 多選題測驗邏輯 (1 英文選多中文) ---
   function loadQuizQuestion() {
     isQuizSubmitted = false;
     document.getElementById('quiz-feedback').style.display = 'none';
@@ -918,32 +922,28 @@
     const topicBadges = (currentQuiz.topics || []).map(t => `<span class="badge badge-topic">${t.split('.')[0]}</span>`).join('');
     document.getElementById('quiz-badges').innerHTML = `
       <span class="badge badge-cat">${currentQuiz.category === 'word' ? '單詞' : '其他/短語句型'}</span>
+      <span class="badge badge-pos">${currentQuiz.pos || 'N/A'}</span>
       <span class="badge badge-stage">Stage ${currentQuiz.stage}</span>
       ${topicBadges}
     `;
 
     document.getElementById('quiz-target-word').innerText = currentQuiz.item;
 
-    // 遮蔽關鍵字的例句提示
     const maskedExample = currentQuiz.example.replace(new RegExp(currentQuiz.item, 'gi'), '______');
     document.getElementById('quiz-example-hint').innerHTML = `<em>例句提示: ${maskedExample}</em>`;
 
-    // 產生選項（正確答案 + 隨機抽 3 個干擾項）
     const options = [currentQuiz.meaning];
     const otherMeanings = vocabList
       .filter(i => i.meaning !== currentQuiz.meaning)
       .map(i => i.meaning);
     
-    // 洗牌抽干擾項
     const shuffledOthers = [...new Set(otherMeanings)].sort(() => 0.5 - Math.random());
     for (let i = 0; i < Math.min(3, shuffledOthers.length); i++) {
       options.push(shuffledOthers[i]);
     }
 
-    // 將 4 個選項打散
     options.sort(() => 0.5 - Math.random());
 
-    // 渲染選項按鈕
     options.forEach(optionText => {
       const btn = document.createElement('button');
       btn.className = 'mc-option-btn';
@@ -959,7 +959,6 @@
     isQuizSubmitted = true;
     const isCorrect = selectedText === currentQuiz.meaning;
 
-    // 停用所有按鈕並標記顏色
     const allBtns = document.querySelectorAll('.mc-option-btn');
     allBtns.forEach(btn => {
       btn.disabled = true;
@@ -972,12 +971,10 @@
       selectedBtn.classList.add('wrong-choice');
     }
 
-    // 更新分數
     quizStats.total++;
     if (isCorrect) quizStats.correct++;
     updateQuizScoreUI();
 
-    // 間隔記憶同步更新
     const itemIndex = vocabList.indexOf(currentQuiz);
     if (itemIndex !== -1 && document.getElementById('quiz-mode').value === 'spaced') {
       let item = vocabList[itemIndex];
@@ -985,10 +982,9 @@
       const nextDate = new Date();
       nextDate.setDate(nextDate.getDate() + INTERVAL_DAYS[item.stage]);
       item.nextReviewDate = nextDate.toISOString();
-      localStorage.setItem('dse_vocab_v5', JSON.stringify(vocabList));
+      localStorage.setItem('dse_vocab_v6', JSON.stringify(vocabList));
     }
 
-    // 反饋結果
     const feedback = document.getElementById('quiz-feedback');
     feedback.style.display = 'block';
 
@@ -1014,7 +1010,6 @@
     updateQuizScoreUI();
   }
 
-  // --- 渲染列表與排序 ---
   function renderList(targetCategory) {
     const isWord = targetCategory === 'word';
     const listContainer = document.getElementById(isWord ? 'vocab-list' : 'phrase-list');
@@ -1028,7 +1023,6 @@
       return matchesCat && matchesSearch && matchesTopic;
     });
 
-    // 先按 Stage 排序，若 Stage 相同按字母 A-Z 排列
     filtered.sort((a, b) => {
       if (a.stage !== b.stage) return a.stage - b.stage;
       return a.item.localeCompare(b.item, 'en', { sensitivity: 'base' });
@@ -1046,7 +1040,7 @@
         <div class="word-item">
           <div>
             <strong>${item.item}</strong> 
-            <span class="meta-tag">(${item.formality} | Stage ${item.stage} | 主題: ${topicsStr})</span>
+            <span class="meta-tag">(${item.pos || 'N/A'} | ${item.formality} | Stage ${item.stage} | 主題: ${topicsStr})</span>
             <div>${item.meaning}</div>
             <small style="color:var(--meta-text);">例: ${item.example}</small>
           </div>
@@ -1062,22 +1056,21 @@
   function deleteItem(index, category) {
     if (confirm('確定要刪除這筆資料嗎？')) {
       vocabList.splice(index, 1);
-      localStorage.setItem('dse_vocab_v5', JSON.stringify(vocabList));
+      localStorage.setItem('dse_vocab_v6', JSON.stringify(vocabList));
       renderList(category);
     }
   }
 
-  // --- 編輯功能 (Edit Modal) ---
   function openEditModal(index) {
     const item = vocabList[index];
     document.getElementById('edit-index').value = index;
     document.getElementById('edit-category').value = item.category;
     document.getElementById('edit-item').value = item.item;
+    document.getElementById('edit-pos').value = item.pos || 'n.';
     document.getElementById('edit-formality').value = item.formality;
     document.getElementById('edit-meaning').value = item.meaning;
     document.getElementById('edit-example').value = item.example;
 
-    // 帶入該項目的已有勾選主題
     renderTopicCheckboxes('edit-topics-container', 'edit', item.topics || []);
 
     document.getElementById('edit-modal').style.display = 'flex';
@@ -1101,19 +1094,19 @@
       ...vocabList[index],
       category: document.getElementById('edit-category').value,
       item: document.getElementById('edit-item').value.trim(),
+      pos: document.getElementById('edit-pos').value,
       formality: document.getElementById('edit-formality').value,
       topics: selectedTopics,
       meaning: document.getElementById('edit-meaning').value.trim(),
       example: document.getElementById('edit-example').value.trim()
     };
 
-    localStorage.setItem('dse_vocab_v5', JSON.stringify(vocabList));
+    localStorage.setItem('dse_vocab_v6', JSON.stringify(vocabList));
     closeEditModal();
     alert('修改成功！');
     renderList(vocabList[index].category);
   }
 
-  // --- 數據統計儀表板 ---
   function renderStats() {
     const total = vocabList.length;
     const wordsCount = vocabList.filter(i => i.category === 'word').length;
@@ -1123,7 +1116,6 @@
     document.getElementById('stat-words').innerText = wordsCount;
     document.getElementById('stat-phrases').innerText = phrasesCount;
 
-    // Stage 統計
     const stageBody = document.querySelector('#stage-table tbody');
     stageBody.innerHTML = INTERVAL_DAYS.map((days, stage) => {
       const count = vocabList.filter(i => i.stage === stage).length;
@@ -1131,7 +1123,6 @@
       return `<tr><td>Stage ${stage}</td><td>${days === 0 ? '即時' : days + ' 天'}</td><td>${count}</td><td>${pct}</td></tr>`;
     }).join('');
 
-    // Topic 統計
     const topicBody = document.querySelector('#topic-table tbody');
     topicBody.innerHTML = DSE_TOPICS.map(topic => {
       const count = vocabList.filter(i => i.topics && i.topics.includes(topic)).length;
@@ -1139,7 +1130,6 @@
     }).join('');
   }
 
-  // 初始進入
   startCountdown();
   initTheme();
   initTopicSelects();
