@@ -31,6 +31,8 @@
       --meta-text: #aaa;
     }
 
+    body.dark-mode .badge-formality { background: #4a1c2c; color: #f8bbd0; }
+
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
       background-color: var(--bg);
@@ -251,6 +253,7 @@
     .badge-pos { background: #fff3e0; color: #e65100; }
     .badge-stage { background: #f3e5f5; color: #7b1fa2; }
     .badge-topic { background: #e3f2fd; color: #0d47a1; }
+    .badge-formality { background: #fce4ec; color: #ad1457; }
 
     .card-text {
       font-size: 26px;
@@ -855,6 +858,7 @@
     document.getElementById('card-badges').innerHTML = `
       <span class="badge badge-cat">${currentCard.category === 'word' ? '單詞' : '其他/短語句型'}</span>
       <span class="badge badge-pos">${currentCard.pos || 'N/A'}</span>
+      <span class="badge badge-formality">${currentCard.formality || 'N/A'}</span>
       <span class="badge badge-stage">Stage ${currentCard.stage}</span>
       ${topicBadges}
     `;
@@ -923,6 +927,7 @@
     document.getElementById('quiz-badges').innerHTML = `
       <span class="badge badge-cat">${currentQuiz.category === 'word' ? '單詞' : '其他/短語句型'}</span>
       <span class="badge badge-pos">${currentQuiz.pos || 'N/A'}</span>
+      <span class="badge badge-formality">${currentQuiz.formality || 'N/A'}</span>
       <span class="badge badge-stage">Stage ${currentQuiz.stage}</span>
       ${topicBadges}
     `;
