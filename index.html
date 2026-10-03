@@ -93,7 +93,7 @@
 
     .tab-btn {
       flex: 1;
-      min-width: 120px;
+      min-width: 110px;
       padding: 12px 8px;
       border: none;
       background: var(--border);
@@ -403,6 +403,39 @@
       max-height: 90vh;
       overflow-y: auto;
     }
+
+    .custom-selection-list {
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    .custom-item-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-bottom: 1px solid var(--item-border);
+      cursor: pointer;
+    }
+    .custom-item-row:hover {
+      background: rgba(43, 87, 151, 0.05);
+    }
+    .custom-item-row:last-child {
+      border-bottom: none;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -418,6 +451,7 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('review')">覆習卡片</button>
     <button class="tab-btn" onclick="switchTab('quiz')">📝 多選題測驗</button>
+    <button class="tab-btn" onclick="switchTab('custom-quiz')">🎯 自選單詞測驗</button>
     <button class="tab-btn" onclick="switchTab('add')">➕ 新增內容</button>
     <button class="tab-btn" onclick="switchTab('vocab')">📖 單詞庫</button>
     <button class="tab-btn" onclick="switchTab('phrase')">📝 其他/短語句型</button>
@@ -491,6 +525,53 @@
 
       <div id="quiz-feedback" class="quiz-result" style="display:none;"></div>
       <button id="quiz-next-btn" class="submit-btn" style="display:none; margin-top:15px;" onclick="loadQuizQuestion()">下一題</button>
+    </div>
+  </div>
+
+  <!-- 🎯 自選單詞測驗面板 -->
+  <div id="custom-quiz-panel" class="panel">
+    <!-- 選擇模式視圖 -->
+    <div id="custom-quiz-setup">
+      <h3>🎯 勾選要進行測驗的項目</h3>
+      <div class="filter-bar">
+        <input type="text" id="custom-search" placeholder="搜尋英文或中文..." oninput="renderCustomSelectionList()">
+        <select id="custom-topic-filter" onchange="renderCustomSelectionList()">
+          <option value="ALL">所有主題 (All Topics)</option>
+        </select>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div>
+          <button class="btn-secondary" onclick="toggleSelectAllCustom(true)">全選</button>
+          <button class="btn-secondary" onclick="toggleSelectAllCustom(false)">取消全選</button>
+        </div>
+        <div style="font-size:14px; font-weight:bold; color:var(--primary);">
+          已選擇 <span id="custom-selected-count">0</span> 項
+        </div>
+      </div>
+
+      <div class="custom-selection-list" id="custom-selection-container"></div>
+
+      <button class="submit-btn" onclick="startCustomQuiz()">🚀 開始自選測驗</button>
+    </div>
+
+    <!-- 測驗進行中視圖 -->
+    <div id="custom-quiz-active" style="display:none;">
+      <div class="review-status">
+        <span id="custom-quiz-progress-text">進度：0 / 0</span>
+        <button class="btn-secondary" onclick="exitCustomQuiz()">⏹️ 結束測驗</button>
+      </div>
+
+      <div class="quiz-box">
+        <div class="badge-group" id="custom-quiz-badges"></div>
+        <div class="card-text" id="custom-quiz-target-word">題目加載中...</div>
+        <div class="help-text" id="custom-quiz-example-hint" style="margin-bottom:20px; font-size:15px;"></div>
+        
+        <div class="mc-options-grid" id="custom-mc-options-container"></div>
+
+        <div id="custom-quiz-feedback" class="quiz-result" style="display:none;"></div>
+        <button id="custom-quiz-next-btn" class="submit-btn" style="display:none; margin-top:15px;" onclick="loadNextCustomQuizQuestion()">下一題</button>
+      </div>
     </div>
   </div>
 
@@ -713,6 +794,14 @@
   let currentQuiz = null;
   let isQuizSubmitted = false;
 
+  // 自選測驗相關變數
+  let selectedCustomIndices = new Set();
+  let customQuizQueue = [];
+  let currentCustomQuizIndex = 0;
+  let currentCustomQuizItem = null;
+  let isCustomQuizSubmitted = false;
+  let customQuizStats = { correct: 0, total: 0 };
+
   function startCountdown() {
     const targetDate = new Date('2029-04-04T00:00:00').getTime();
     function updateTimer() {
@@ -773,12 +862,13 @@
     
     document.getElementById('review-topic-filter').innerHTML = filterOptions;
     document.getElementById('quiz-topic-filter').innerHTML = filterOptions;
+    document.getElementById('custom-topic-filter').innerHTML = filterOptions;
     document.getElementById('filter-vocab-topic').innerHTML = filterOptions;
     document.getElementById('filter-phrase-topic').innerHTML = filterOptions;
   }
 
   function switchTab(tabName) {
-    const tabs = ['review', 'quiz', 'add', 'vocab', 'phrase', 'stats'];
+    const tabs = ['review', 'quiz', 'custom-quiz', 'add', 'vocab', 'phrase', 'stats'];
     document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
       btn.classList.toggle('active', tabs[idx] === tabName);
     });
@@ -788,6 +878,7 @@
 
     if (tabName === 'review') loadNextReviewCard();
     if (tabName === 'quiz') loadQuizQuestion();
+    if (tabName === 'custom-quiz') renderCustomSelectionList();
     if (tabName === 'vocab') renderList('word');
     if (tabName === 'phrase') renderList('phrase');
     if (tabName === 'stats') renderStats();
@@ -1011,6 +1102,187 @@
   function resetQuizStats() {
     quizStats = { correct: 0, total: 0 };
     updateQuizScoreUI();
+  }
+
+  // --- 🎯 自選單詞測驗邏輯 ---
+  function renderCustomSelectionList() {
+    const container = document.getElementById('custom-selection-container');
+    const query = document.getElementById('custom-search')?.value.toLowerCase().trim() || '';
+    const topicFilter = document.getElementById('custom-topic-filter')?.value || 'ALL';
+
+    const filtered = vocabList.filter(item => {
+      const matchesSearch = item.item.toLowerCase().includes(query) || item.meaning.toLowerCase().includes(query);
+      const matchesTopic = topicFilter === 'ALL' || (item.topics && item.topics.includes(topicFilter));
+      return matchesSearch && matchesTopic;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<p style="text-align:center; color:#888;">沒有找到匹配的單詞</p>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+      const originalIdx = vocabList.indexOf(item);
+      const isChecked = selectedCustomIndices.has(originalIdx) ? 'checked' : '';
+      return `
+        <div class="custom-item-row" onclick="toggleCustomSelection(${originalIdx}, event)">
+          <input type="checkbox" id="custom-item-${originalIdx}" ${isChecked} onclick="event.stopPropagation(); updateCustomSelectionState(${originalIdx}, this.checked)">
+          <div style="flex:1;">
+            <strong>${item.item}</strong> <span class="meta-tag">(${item.pos || 'N/A'})</span>
+            <div style="font-size:13px; color:var(--meta-text);">${item.meaning}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    updateCustomSelectedCountUI();
+  }
+
+  function toggleCustomSelection(idx, event) {
+    const cb = document.getElementById(`custom-item-${idx}`);
+    if (cb) {
+      cb.checked = !cb.checked;
+      updateCustomSelectionState(idx, cb.checked);
+    }
+  }
+
+  function updateCustomSelectionState(idx, isSelected) {
+    if (isSelected) {
+      selectedCustomIndices.add(idx);
+    } else {
+      selectedCustomIndices.delete(idx);
+    }
+    updateCustomSelectedCountUI();
+  }
+
+  function toggleSelectAllCustom(selectAll) {
+    const query = document.getElementById('custom-search')?.value.toLowerCase().trim() || '';
+    const topicFilter = document.getElementById('custom-topic-filter')?.value || 'ALL';
+
+    vocabList.forEach((item, idx) => {
+      const matchesSearch = item.item.toLowerCase().includes(query) || item.meaning.toLowerCase().includes(query);
+      const matchesTopic = topicFilter === 'ALL' || (item.topics && item.topics.includes(topicFilter));
+      if (matchesSearch && matchesTopic) {
+        if (selectAll) selectedCustomIndices.add(idx);
+        else selectedCustomIndices.delete(idx);
+      }
+    });
+
+    renderCustomSelectionList();
+  }
+
+  function updateCustomSelectedCountUI() {
+    document.getElementById('custom-selected-count').innerText = selectedCustomIndices.size;
+  }
+
+  function startCustomQuiz() {
+    if (selectedCustomIndices.size === 0) {
+      alert('請先勾選至少一個要測驗的單詞！');
+      return;
+    }
+
+    customQuizQueue = Array.from(selectedCustomIndices).map(idx => vocabList[idx]);
+    customQuizQueue.sort(() => 0.5 - Math.random()); // 打亂順序
+
+    currentCustomQuizIndex = 0;
+    customQuizStats = { correct: 0, total: 0 };
+
+    document.getElementById('custom-quiz-setup').style.display = 'none';
+    document.getElementById('custom-quiz-active').style.display = 'block';
+
+    loadNextCustomQuizQuestion();
+  }
+
+  function exitCustomQuiz() {
+    document.getElementById('custom-quiz-setup').style.display = 'block';
+    document.getElementById('custom-quiz-active').style.display = 'none';
+  }
+
+  function loadNextCustomQuizQuestion() {
+    if (currentCustomQuizIndex >= customQuizQueue.length) {
+      alert(`🎉 自選測驗結束！\n你的成績：答對 ${customQuizStats.correct} / 總共 ${customQuizStats.total} 題 (${((customQuizStats.correct/customQuizStats.total)*100).toFixed(1)}%)`);
+      exitCustomQuiz();
+      return;
+    }
+
+    isCustomQuizSubmitted = false;
+    currentCustomQuizItem = customQuizQueue[currentCustomQuizIndex];
+
+    document.getElementById('custom-quiz-feedback').style.display = 'none';
+    document.getElementById('custom-quiz-next-btn').style.display = 'none';
+    document.getElementById('custom-quiz-progress-text').innerText = `進度：${currentCustomQuizIndex + 1} / ${customQuizQueue.length}`;
+
+    const topicBadges = (currentCustomQuizItem.topics || []).map(t => `<span class="badge badge-topic">${t.split('.')[0]}</span>`).join('');
+    document.getElementById('custom-quiz-badges').innerHTML = `
+      <span class="badge badge-cat">${currentCustomQuizItem.category === 'word' ? '單詞' : '其他/短語句型'}</span>
+      <span class="badge badge-pos">${currentCustomQuizItem.pos || 'N/A'}</span>
+      <span class="badge badge-formality">${currentCustomQuizItem.formality || 'N/A'}</span>
+      ${topicBadges}
+    `;
+
+    document.getElementById('custom-quiz-target-word').innerText = currentCustomQuizItem.item;
+
+    const maskedExample = currentCustomQuizItem.example.replace(new RegExp(currentCustomQuizItem.item, 'gi'), '______');
+    document.getElementById('custom-quiz-example-hint').innerHTML = `<em>例句提示: ${maskedExample}</em>`;
+
+    const container = document.getElementById('custom-mc-options-container');
+    container.innerHTML = '';
+
+    const options = [currentCustomQuizItem.meaning];
+    const otherMeanings = vocabList
+      .filter(i => i.meaning !== currentCustomQuizItem.meaning)
+      .map(i => i.meaning);
+    
+    const shuffledOthers = [...new Set(otherMeanings)].sort(() => 0.5 - Math.random());
+    for (let i = 0; i < Math.min(3, shuffledOthers.length); i++) {
+      options.push(shuffledOthers[i]);
+    }
+
+    options.sort(() => 0.5 - Math.random());
+
+    options.forEach(optionText => {
+      const btn = document.createElement('button');
+      btn.className = 'mc-option-btn';
+      btn.innerText = optionText;
+      btn.onclick = () => handleCustomQuizOptionSelect(optionText, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function handleCustomQuizOptionSelect(selectedText, selectedBtn) {
+    if (!currentCustomQuizItem || isCustomQuizSubmitted) return;
+
+    isCustomQuizSubmitted = true;
+    const isCorrect = selectedText === currentCustomQuizItem.meaning;
+
+    const allBtns = document.querySelectorAll('#custom-mc-options-container .mc-option-btn');
+    allBtns.forEach(btn => {
+      btn.disabled = true;
+      if (btn.innerText === currentCustomQuizItem.meaning) {
+        btn.classList.add('correct-choice');
+      }
+    });
+
+    if (!isCorrect) {
+      selectedBtn.classList.add('wrong-choice');
+    }
+
+    customQuizStats.total++;
+    if (isCorrect) customQuizStats.correct++;
+
+    const feedback = document.getElementById('custom-quiz-feedback');
+    feedback.style.display = 'block';
+
+    if (isCorrect) {
+      feedback.className = 'quiz-result quiz-correct';
+      feedback.innerHTML = `✅ 答對了！ <strong>${currentCustomQuizItem.item}</strong> ＝ ${currentCustomQuizItem.meaning}`;
+    } else {
+      feedback.className = 'quiz-result quiz-wrong';
+      feedback.innerHTML = `❌ 答錯了！正確答案是：<strong>${currentCustomQuizItem.meaning}</strong>`;
+    }
+
+    currentCustomQuizIndex++;
+    document.getElementById('custom-quiz-next-btn').style.display = 'block';
   }
 
   function renderList(targetCategory) {
