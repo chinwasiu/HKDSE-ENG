@@ -1110,11 +1110,15 @@
     const query = document.getElementById('custom-search')?.value.toLowerCase().trim() || '';
     const topicFilter = document.getElementById('custom-topic-filter')?.value || 'ALL';
 
-    const filtered = vocabList.filter(item => {
+    // 1. 過濾項目
+    let filtered = vocabList.filter(item => {
       const matchesSearch = item.item.toLowerCase().includes(query) || item.meaning.toLowerCase().includes(query);
       const matchesTopic = topicFilter === 'ALL' || (item.topics && item.topics.includes(topicFilter));
       return matchesSearch && matchesTopic;
     });
+
+    // 2. 純粹按英文單詞/短語字母順序 (A to Z Alphabetically) 排序
+    filtered.sort((a, b) => a.item.localeCompare(b.item, 'en', { sensitivity: 'base' }));
 
     if (filtered.length === 0) {
       container.innerHTML = '<p style="text-align:center; color:#888;">沒有找到匹配的單詞</p>';
